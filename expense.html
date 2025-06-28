@@ -14,8 +14,16 @@
   <div id="root"></div>
   <script type="text/babel">
     function App() {
+      const getTodayDate = () => {
+        const date = new Date();
+        // Adjust for IST (UTC+5:30)
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istDate = new Date(date.getTime() + istOffset);
+        return istDate.toISOString().split('T')[0];
+      };
+
       const initialFormData = {
-        date: new Date().toISOString().split('T')[0],
+        date: getTodayDate(),
         category: 'Fixed',
         amount: '',
         details: '',
@@ -40,7 +48,7 @@
           console.log('Response:', response.data);
           setStatus('Expenses submitted successfully!');
           setSubmittedData(response.data.submitted);
-          setFormData(initialFormData);
+          setFormData({ ...initialFormData, date: getTodayDate() });
           setError('');
         } catch (error) {
           console.error('Error:', error.message);
@@ -68,7 +76,7 @@
                       name="date"
                       value={formData.date}
                       onChange={handleChange}
-                      max={new Date().toISOString().split('T')[0]}
+                      max={getTodayDate()}
                       className="mt-1 p-2 border rounded w-full"
                       required
                     />
@@ -87,7 +95,7 @@
                     >
                       <option value="Fixed">Fixed (e.g., Salaries)</option>
                       <option value="Operational">Operational (e.g., Maintenance, Repairs)</option>
-                      <option value="Others">Others (Misc)</option>
+                      <option value="Others">Others (e.g., Tips to lorry drivers)</option>
                     </select>
                   </div>
                   <div className="mb-4">
