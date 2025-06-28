@@ -22,7 +22,7 @@ module.exports = async function (req, res) {
 
     const data = req.body;
     const spreadsheetId = process.env.SPREADSHEET_ID;
-    const range = 'DataEntry!A:M';
+    const range = 'Sales!A:M';
 
     if (!data || !data.date) {
       throw new Error('Invalid request data');
