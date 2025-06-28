@@ -29,7 +29,7 @@
       const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const response = await axios.post('https://script.google.com/macros/s/AKfycbxCjtmRNyPIocvsHOJnXQZK1hmDSlVU_Efu2fNfmajv1pFpRuNXz9TgAxZ9qxLkB5AS/exec', formData);
+          const response = await axios.post('https://script.google.com/macros/s/AKfycby2Itd1RCs3U_HZFw6-M8-IAlcIH-jyROJeRliWZtOwD60QSUCZd6mP4YY5K8TIKKyM/exec', formData);
           setStatus('Data submitted successfully!');
           setFormData({
             date: new Date().toISOString().split('T')[0],
