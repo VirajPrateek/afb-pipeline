@@ -16,9 +16,17 @@
     function App() {
       const [formData, setFormData] = React.useState({
         date: new Date().toISOString().split('T')[0],
-        msVolume: '', msAmount: '', hsdVolume: '', hsdAmount: '',
-        lubesAmount: '', cashCollected: '', digitalPayments: '',
-        creditSales: '', creditPayments: '', cashDeposited: '', notes: ''
+        msVolume: '100',
+        msAmount: '10000',
+        hsdVolume: '200',
+        hsdAmount: '20000',
+        lubesAmount: '5000',
+        cashCollected: '15000',
+        digitalPayments: '10000',
+        creditSales: '5000',
+        creditPayments: '3000',
+        cashDeposited: '14000',
+        notes: 'Test entry'
       });
       const [status, setStatus] = React.useState('');
 
@@ -29,15 +37,27 @@
       const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const response = await axios.post('https://script.google.com/macros/s/AKfycby2Itd1RCs3U_HZFw6-M8-IAlcIH-jyROJeRliWZtOwD60QSUCZd6mP4YY5K8TIKKyM/exec', formData);
+          const response = await axios.post('https://script.google.com/macros/s/AKfycbx6eQH0kHKdzN8qNNgjGXrnMSuYzF3BOnBsknUNtVqsURjUMoXAAj803XPgRTZcodkz/exec', formData, {
+            headers: { 'Content-Type': 'application/json' }
+          });
+          console.log('Response:', response.data);
           setStatus('Data submitted successfully!');
           setFormData({
             date: new Date().toISOString().split('T')[0],
-            msVolume: '', msAmount: '', hsdVolume: '', hsdAmount: '',
-            lubesAmount: '', cashCollected: '', digitalPayments: '',
-            creditSales: '', creditPayments: '', cashDeposited: '', notes: ''
+            msVolume: '100',
+            msAmount: '10000',
+            hsdVolume: '200',
+            hsdAmount: '20000',
+            lubesAmount: '5000',
+            cashCollected: '15000',
+            digitalPayments: '10000',
+            creditSales: '5000',
+            creditPayments: '3000',
+            cashDeposited: '14000',
+            notes: 'Test entry'
           });
         } catch (error) {
+          console.error('Error:', error.message);
           setStatus('Error submitting data: ' + error.message);
         }
       };
