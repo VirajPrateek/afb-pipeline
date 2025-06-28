@@ -37,7 +37,7 @@
       const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const response = await axios.post('https://script.google.com/macros/s/AKfycbx6eQH0kHKdzN8qNNgjGXrnMSuYzF3BOnBsknUNtVqsURjUMoXAAj803XPgRTZcodkz/exec', formData, {
+          const response = await axios.post('/api/submit', formData, {
             headers: { 'Content-Type': 'application/json' }
           });
           console.log('Response:', response.data);
