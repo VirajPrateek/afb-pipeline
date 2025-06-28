@@ -3,7 +3,7 @@ const sheets = google.sheets('v4');
 
 module.exports = async function (req, res) {
   try {
-    console.log('Request body:', req.body);
+    console.log('Expense request body:', req.body);
     console.log('Environment variables:', {
       client_email: process.env.GOOGLE_CLIENT_EMAIL,
       spreadsheet_id: process.env.SPREADSHEET_ID,
@@ -22,9 +22,9 @@ module.exports = async function (req, res) {
 
     const data = req.body;
     const spreadsheetId = process.env.SPREADSHEET_ID;
-    const range = 'Sales!A:M';
+    const range = 'Expenses!A:F';
 
-    if (!data || !data.date) {
+    if (!data || !data.date || !data.category) {
       throw new Error('Invalid request data');
     }
 
@@ -38,16 +38,9 @@ module.exports = async function (req, res) {
     const row = [
       new Date().toISOString(),
       formattedDate,
-      parseFloat(data.msVolume) || 0,
-      parseFloat(data.msAmount) || 0,
-      parseFloat(data.hsdVolume) || 0,
-      parseFloat(data.hsdAmount) || 0,
-      parseFloat(data.lubesAmount) || 0,
-      parseFloat(data.cashCollected) || 0,
-      parseFloat(data.digitalPayments) || 0,
-      parseFloat(data.creditSales) || 0,
-      parseFloat(data.creditPayments) || 0,
-      parseFloat(data.cashDeposited) || 0,
+      data.category,
+      parseFloat(data.amount) || 0,
+      data.details || '',
       data.notes || ''
     ];
     console.log('Row data:', row);
@@ -59,7 +52,7 @@ module.exports = async function (req, res) {
       valueInputOption: 'USER_ENTERED',
       resource: { values: [row] }
     });
-    console.log('Data appended to Sales tab');
+    console.log('Data appended to Expenses tab');
 
     res.status(200).json({ status: 'success', submitted: data });
   } catch (error) {
