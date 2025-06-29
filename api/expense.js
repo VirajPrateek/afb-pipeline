@@ -1,176 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AFB | Expenses</title>
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="text/babel">
-    function App() {
-      const getTodayDate = () => {
-        const date = new Date();
-        const istOffset = 5.5 * 60 * 60 * 1000;
-        const istDate = new Date(date.getTime() + istOffset);
-        return istDate.toISOString().split('T')[0];
-      };
+const { google } = require('googleapis');
+const sheets = google.sheets('v4');
 
-      const initialFormData = {
-        date: getTodayDate(),
-        category: 'Fixed',
-        amount: '',
-        details: '',
-        notes: ''
-      };
-      const [formData, setFormData] = React.useState(initialFormData);
-      const [status, setStatus] = React.useState('');
-      const [submittedData, setSubmittedData] = React.useState(null);
-      const [error, setError] = React.useState('');
+module.exports = async function (req, res) {
+  try {
+    const data = req.body;
+    console.log('Expense request:', { date: data.date, category: data.category });
 
-      const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        setError('');
-      };
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    const sheetsClient = await auth.getClient();
 
-      const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-          const response = await axios.post('/api/expense', formData, {
-            headers: { 'Content-Type': 'application/json' }
-          });
-          console.log('Response:', response.data);
-          setStatus('Expenses submitted successfully!');
-          setSubmittedData(response.data.submitted);
-          setFormData({ ...initialFormData, date: getTodayDate() });
-          setError('');
-        } catch (error) {
-          console.error('Error:', error.message);
-          setStatus('');
-          setError('Error submitting data: ' + error.message);
-          setSubmittedData(null);
-        }
-      };
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const range = 'Expenses!A:F';
 
-      return (
-        <div className="container mx-auto p-4 max-w-lg">
-          <h1 className="text-2xl font-bold mb-4 text-center">AFB | Expenses</h1>
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex justify-between mb-4">
-              <a href="/index.html" className="text-blue-500 hover:underline">Home</a>
-              <a href="/sales.html" className="text-blue-500 hover:underline">Enter Sales</a>
-            </div>
-            {!submittedData ? (
-              <form onSubmit={handleSubmit}>
-                <div className="mb-6">
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Date</label>
-                    <input
-                      type="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      max={getTodayDate()}
-                      className="mt-1 p-2 border rounded w-full"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-2">Expense Details</h2>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Category</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      className="mt-1 p-2 border rounded w-full"
-                      required
-                    >
-                      <option value="Fixed">Fixed (e.g., Salaries)</option>
-                      <option value="Operational">Operational (e.g., Maintenance, Repairs)</option>
-                      <option value="Others">Others (e.g., Tips to lorry drivers)</option>
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Amount (INR)</label>
-                    <input
-                      type="number"
-                      name="amount"
-                      value={formData.amount}
-                      onChange={handleChange}
-                      className="mt-1 p-2 border rounded w-full"
-                      step="0.01"
-                      min="0"
-                      required
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Details (Optional)</label>
-                    <input
-                      type="text"
-                      name="details"
-                      value={formData.details}
-                      onChange={handleChange}
-                      className="mt-1 p-2 border rounded w-full"
-                    />
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-2">Additional Notes</h2>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Notes</label>
-                    <textarea
-                      name="notes"
-                      value={formData.notes}
-                      onChange={handleChange}
-                      className="mt-1 p-2 border rounded w-full"
-                    ></textarea>
-                  </div>
-                </div>
-                {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 w-full"
-                >
-                  Submit
-                </button>
-              </form>
-            ) : (
-              <div className="mt-4 p-4 bg-green-100 rounded">
-                <p className="text-sm font-medium text-green-700">{status}</p>
-                <div className="mt-2 text-sm text-gray-700">
-                  <p><strong>Submitted Data:</strong></p>
-                  <ul className="list-disc pl-5">
-                    <li>Date: {submittedData.date}</li>
-                    <li>Category: {submittedData.category}</li>
-                    <li>Amount: ₹{submittedData.amount}</li>
-                    <li>Details: {submittedData.details || 'None'}</li>
-                    <li>Notes: {submittedData.notes || 'None'}</li>
-                  </ul>
-                </div>
-                <button
-                  className="mt-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 w-full"
-                  onClick={() => {
-                    setSubmittedData(null);
-                    setStatus('');
-                  }}
-                >
-                  Enter Another Record
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      );
+    if (!data || !data.date || !data.category) {
+      throw new Error('Missing required fields: date or category');
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
-</body>
-</html>
+    const amount = parseFloat(data.amount);
+    if (isNaN(amount) || amount < 0) {
+      throw new Error('Amount must be a non-negative number');
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    if (data.date > today) {
+      throw new Error('Date cannot be in the future');
+    }
+
+    const formattedDate = new Date(data.date).toISOString().split('T')[0];
+    const row = [
+      new Date().toISOString(),
+      formattedDate,
+      data.category,
+      amount,
+      data.details || '',
+      data.notes || ''
+    ];
+
+    await sheets.spreadsheets.values.append({
+      auth: sheetsClient,
+      spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [row] }
+    });
+    console.log('Data appended to Expenses tab');
+
+    res.status(200).json({ status: 'success', submitted: data });
+  } catch (error) {
+    console.error('Expense error:', error.message);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
